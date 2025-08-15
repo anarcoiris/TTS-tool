@@ -1,0 +1,47 @@
+# GPU / CUDA 11.8 + Python 3.10 + Coqui TTS
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    PIP_NO_CACHE_DIR=1
+
+# instalar dependencias del sistema
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.10 python3.10-venv python3-pip python3-setuptools python3-dev \
+    build-essential git ffmpeg libsndfile1 wget ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# asegurar que "python" y "pip" apunten a python3.10/pip3
+RUN ln -sf /usr/bin/python3.10 /usr/bin/python \
+    && ln -sf /usr/bin/pip3 /usr/bin/pip
+
+# pip actualizado
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# instalar PyTorch con soporte CUDA 11.8 (usa index-url oficial)
+# Ajusta versiones si necesitas una compatibilidad concreta entre TTS y torch.
+RUN python -m pip install --no-cache-dir \
+    torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118
+
+# instalar Coqui TTS y utilidades de audio
+RUN python -m pip install --no-cache-dir TTS soundfile librosa numpy matplotlib
+
+# Crear workspace y copiar tu código
+WORKDIR /workspace
+COPY . /workspace
+
+# Crear un usuario no-root y dar permisos al workspace
+RUN useradd -ms /bin/bash ttsuser && chown -R ttsuser:ttsuser /workspace
+USER ttsuser
+ENV HOME=/home/ttsuser
+
+# Entrypoint por defecto: abrir bash (para uso interactivo)
+ENTRYPOINT ["/bin/bash"]
+
+# NOTA: no se realizan comprobaciones de GPU en tiempo de build (habitualmente no se dispone de GPU durante la construcción).
+# Para probar CUDA/GPU ejecuta el contenedor en runtime (ejemplo abajo).
+# Ejemplo de build y test:
+#   docker build --gpus=all -t coqui-tts:cuda11.8 .
+#   docker run --gpus=all --rm -it coqui-tts:cuda11.8 python -c "import torch; print('CUDA available:', torch.cuda.is_available()); print('GPU count:', torch.cuda.device_count()); print('GPU name:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None')"

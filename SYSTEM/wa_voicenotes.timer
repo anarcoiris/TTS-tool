@@ -1,0 +1,10 @@
+[Unit]
+Description=Run WA Voicenotes Capture every hour
+
+[Timer]
+OnCalendar=*-*-* *:00:00
+Persistent=true
+Unit=wa_voicenotes.service
+
+[Install]
+WantedBy=timers.target

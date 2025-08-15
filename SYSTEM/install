@@ -1,0 +1,3 @@
+sudo systemctl daemon-reload
+sudo systemctl enable --now wa_voicenotes.timer
+sudo systemctl status wa_voicenotes.timer

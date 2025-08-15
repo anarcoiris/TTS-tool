@@ -1,0 +1,11 @@
+[Unit]
+Description=WA Voicenotes Capture Script
+After=network.target
+
+[Service]
+Type=oneshot
+User=TU_USUARIO
+Environment=OPENAI_API_KEY=sk-...
+WorkingDirectory=/ruta/a/tu/carpeta
+ExecStart=/usr/bin/python3 /ruta/a/tu/carpeta/wa_voicenotes_capture_complete.py
+TimeoutStartSec=600

@@ -1,0 +1,23 @@
+fastapi[standard]
+librosa
+# Web / API
+uvicorn[standard]>=0.22
+
+# File upload / static
+python-multipart>=0.0.6
+aiofiles>=23.1.0
+
+# TTS engine (elige 'TTS' o 'coqui-tts' según prefieras)
+Coqui-TTS
+
+# Audio / ML utilities
+soundfile>=0.12.1
+librosa>=0.10.0
+numpy>=1.25
+matplotlib>=3.8
+
+# (opcional) para procesamiento/CLI
+torchmetrics>=0.11.0
+# pip install torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu118
+
+

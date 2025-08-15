@@ -1,0 +1,89 @@
+2) Configurar ejecución periódica (cada 1 hora)
+
+Tienes dos opciones: systemd timer (recomendado en Linux moderno) o crontab.
+
+A — systemd unit + timer (Linux)
+
+Crea dos ficheros como root (ajusta ruta del script):
+
+/etc/systemd/system/wa_voicenotes.service
+
+[Unit]
+Description=WA Voicenotes Capture Script
+After=network.target
+
+[Service]
+Type=oneshot
+User=TU_USUARIO
+Environment=OPENAI_API_KEY=sk-...
+WorkingDirectory=/ruta/a/tu/carpeta
+ExecStart=/usr/bin/python3 /ruta/a/tu/carpeta/wa_voicenotes_capture_complete.py
+TimeoutStartSec=600
+
+
+/etc/systemd/system/wa_voicenotes.timer
+
+[Unit]
+Description=Run WA Voicenotes Capture every hour
+
+[Timer]
+OnCalendar=*-*-* *:00:00
+Persistent=true
+Unit=wa_voicenotes.service
+
+[Install]
+WantedBy=timers.target
+
+
+Instala y habilita:
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now wa_voicenotes.timer
+sudo systemctl status wa_voicenotes.timer
+
+
+Nota: mejor no incluir la API key en el unit; en su lugar exporta el env var en un archivo seguro y referencia EnvironmentFile=/ruta/.env_wa dentro del [Service]. Ejemplo de .env_wa:
+
+OPENAI_API_KEY=sk-...
+
+
+Y en el unit añade EnvironmentFile=/ruta/.env_wa.
+
+B — crontab (alternativa)
+
+Edita crontab del usuario (crontab -e) y añade:
+
+0 * * * * OPENAI_API_KEY="sk-..." /usr/bin/python3 /ruta/a/tu/carpeta/wa_voicenotes_capture_complete.py >> /ruta/a/tu/carpeta/wa_voicenotes/cron.log 2>&1
+
+
+(Preferible: usa un archivo .env y carga con un wrapper shell que exporte las variables antes de ejecutar el script.)
+
+3) Pipeline / reglas — cómo personalizarlas (ideas)
+
+rule_should_respond() actualmente tiene reglas ejemplo (greeting/thanks/urgent/auto_openai). Cambia palabras clave o añade análisis semántico (OpenAI) para clasificar.
+
+Para “secretaria” puede definirse una lista de remitentes importantes; o forwardear mensajes con ciertas etiquetas.
+
+Para notificaciones vía SMS puedes integrar Twilio — te puedo añadir plantilla si lo quieres (requerirá TWILIO_ACCOUNT_SID y TWILIO_AUTH_TOKEN).
+
+4) Notas sobre seguridad y TOS
+
+Usa sólo tu cuenta. Automatizar interacción con WhatsApp Web puede violar sus términos de servicio; úsal o bajo tu responsabilidad.
+
+OpenAI API: guarda tu clave con seguridad. No la incluyas en ficheros públicos.
+
+Sesión Chrome: CHROME_USER_DATA_DIR contiene datos de sesión; protégelo.
+
+5) Siguientes pasos que puedo hacer por ti (elige lo que quieras)
+
+A) Añadir integración con Twilio para enviar SMS o llamadas de notificación.
+
+B) Añadir envío de métricas a InfluxDB / Kafka (stubs ya preparados).
+
+C) Crear UI pequeña (modo interactivo) para recortar y generar templates play.png / menu.png con clicks.
+
+D) Mejorar reglas del pipeline usando OpenAI para clasificación y sólo responder con confirmación previa (seguro).
+
+E) Añadir wrapper que ejecute continuamente pero con reinicios y gestión de memoria (no recomendado: preferir timer).
+
+Dime cuál(es) prefieres y te lo entre

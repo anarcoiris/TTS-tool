@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  tts:
+    build:
+      context: .
+      dockerfile: Dockerfile        # usa Dockerfile (GPU)
+    image: tts_gpu:latest
+    container_name: tts_gpu
+    tty: true
+    stdin_open: true
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - PYTHONUNBUFFERED=1
+    # habilitar runtime nvidia (requiere nvidia container toolkit)
+    runtime: nvidia
+    # montar tu proyecto actual en /workspace (ajusta si quieres otro path)
+    volumes:
+      - ./:/workspace:rw
+    working_dir: /workspace
+    # ejemplo: si quieres exponer puerto para un servidor web en el futuro
+    # ports:
+    #   - "5002:5002"
+
+# servicio alternativo CPU (descomenta y adapta si quieres)
+#  tts_cpu:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile.cpu
+#    image: tts_cpu:latest
+#    container_name: tts_cpu
+#    tty: true
+#    stdin_open: true
+#    volumes:
+#      - ./:/workspace:rw
+#    working_dir: /workspace
