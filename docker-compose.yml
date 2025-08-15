@@ -17,9 +17,9 @@ services:
     volumes:
       - ./:/workspace:rw
     working_dir: /workspace
-    # ejemplo: si quieres exponer puerto para un servidor web en el futuro
-    # ports:
-    #   - "5002:5002"
+    # Puertos expuestos WARNING
+    ports:
+      - "5002:5002"
 
 # servicio alternativo CPU (descomenta y adapta si quieres)
 #  tts_cpu:
